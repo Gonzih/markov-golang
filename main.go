@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -58,10 +61,17 @@ func generateChain(input string) map[string][]string {
 		trimmed := strings.Trim(word, " \t\n")
 		dict := chain[trimmed]
 
-		if i < len(words)-1 && !contains(dict, trimmed) {
-			chain[trimmed] = append(dict, words[i+1])
+		if i < len(words)-1 {
+			next := words[i+1]
+
+			if !contains(dict, next) {
+				// fmt.Printf("Adding '%s' to %v\n", next, dict)
+				chain[trimmed] = append(dict, next)
+			}
 		}
 	}
+
+	// fmt.Printf("%v\n", chain)
 
 	return chain
 }
@@ -97,10 +107,40 @@ func generateOutput(chain map[string][]string) string {
 	return output
 }
 
+type Message struct {
+	Text     string `json:"text"`
+	Username string `json:"username"`
+	Icon     string `json:"icon_emoji"`
+}
+
+func postToSlack(output string) {
+	message := Message{Text: output, Username: "Markov", Icon: ":shipit:"}
+	json, err := json.Marshal(&message)
+
+	checkErr(err)
+
+	url := "https://hooks.slack.com/services/000000000/000000000/000000000000000000000000"
+
+	client := http.Client{}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
+
+	checkErr(err)
+
+	req.Header.Set("Content-Type", "application/json")
+	_, err = client.Do(req)
+
+	checkErr(err)
+
+	req.Body.Close()
+}
+
 func main() {
 	input := readInput()
 	chain := generateChain(input)
 	output := generateOutput(chain)
 
-	fmt.Printf("\"%s\"\n", output)
+	fmt.Printf("%s\n", output)
+
+	postToSlack(output)
 }
