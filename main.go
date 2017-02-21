@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+type Chain map[string][]string
+
 func contains(arr []string, s string) bool {
 	for _, ss := range arr {
 		if ss == s {
@@ -52,8 +54,8 @@ func readInput() string {
 	return input
 }
 
-func generateChain(input string) map[string][]string {
-	chain := make(map[string][]string)
+func generateChain(input string) Chain {
+	chain := make(Chain)
 
 	words := strings.Fields(input)
 
@@ -76,7 +78,7 @@ func generateChain(input string) map[string][]string {
 	return chain
 }
 
-func generateOutput(chain map[string][]string) string {
+func generateOutput(chain Chain) string {
 	var output string
 
 	current := "As"
