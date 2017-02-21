@@ -65,7 +65,7 @@ func main() {
 
 	current := "As"
 
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 
 	for {
 		nextArr := chain[current]
