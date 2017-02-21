@@ -26,7 +26,7 @@ func checkErr(err error) {
 	}
 }
 
-func main() {
+func readInput() string {
 	file, err := os.Open("input.csv")
 	checkErr(err)
 
@@ -46,6 +46,10 @@ func main() {
 		}
 	}
 
+	return input
+}
+
+func generateChain(input string) map[string][]string {
 	chain := make(map[string][]string)
 
 	words := strings.Fields(input)
@@ -59,8 +63,10 @@ func main() {
 		}
 	}
 
-	// fmt.Printf("%v\n", chain)
+	return chain
+}
 
+func generateOutput(chain map[string][]string) string {
 	var output string
 
 	current := "As"
@@ -87,6 +93,14 @@ func main() {
 	}
 
 	output = strings.Trim(output, " ")
+
+	return output
+}
+
+func main() {
+	input := readInput()
+	chain := generateChain(input)
+	output := generateOutput(chain)
 
 	fmt.Printf("\"%s\"\n", output)
 }
