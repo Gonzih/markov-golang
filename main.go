@@ -98,7 +98,7 @@ func generateOutput(chain Chain) string {
 		output = output + " " + current
 		current = next
 
-		if strings.Contains(next, ".") {
+		if strings.HasSuffix(next, ".") {
 			output = output + " " + next
 			break
 		}
