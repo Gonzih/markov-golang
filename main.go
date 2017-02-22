@@ -82,7 +82,7 @@ func generateChain(input string) Chain {
 func generateOutput(chain Chain) string {
 	var output string
 
-	current := "As"
+	current := "This"
 
 	rand.Seed(time.Now().UnixNano())
 
