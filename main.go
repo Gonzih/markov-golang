@@ -34,6 +34,7 @@ func checkErr(err error) {
 func readInput() string {
 	file, err := os.Open("input.csv")
 	checkErr(err)
+	defer file.Close()
 
 	reader := bufio.NewReader(file)
 
