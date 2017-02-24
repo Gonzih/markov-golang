@@ -31,7 +31,7 @@ func checkErr(err error) {
 	}
 }
 
-func readInput() string {
+func ReadInput() string {
 	file, err := os.Open("input.csv")
 	checkErr(err)
 	defer file.Close()
@@ -55,7 +55,7 @@ func readInput() string {
 	return input
 }
 
-func generateChain(input string) Chain {
+func GenerateChain(input string) Chain {
 	chain := make(Chain)
 
 	words := strings.Fields(input)
@@ -79,7 +79,7 @@ func generateChain(input string) Chain {
 	return chain
 }
 
-func generateOutput(chain Chain) string {
+func GenerateOutput(chain Chain) string {
 	var output string
 
 	current := "This"
@@ -116,7 +116,7 @@ type Message struct {
 	Icon     string `json:"icon_emoji"`
 }
 
-func postToSlack(output string) {
+func PostToSlack(output string) {
 	message := Message{Text: output, Username: "Markov", Icon: ":shipit:"}
 	json, err := json.Marshal(&message)
 
@@ -139,11 +139,11 @@ func postToSlack(output string) {
 }
 
 func main() {
-	input := readInput()
-	chain := generateChain(input)
-	output := generateOutput(chain)
+	input := ReadInput()
+	chain := GenerateChain(input)
+	output := GenerateOutput(chain)
 
 	fmt.Printf("%s\n", output)
 
-	postToSlack(output)
+	PostToSlack(output)
 }
