@@ -15,16 +15,6 @@ import (
 
 type Chain map[string][]string
 
-func contains(arr []string, s string) bool {
-	for _, ss := range arr {
-		if ss == s {
-			return true
-		}
-	}
-
-	return false
-}
-
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
@@ -67,10 +57,7 @@ func GenerateChain(input string) Chain {
 		if i < len(words)-1 {
 			next := words[i+1]
 
-			if !contains(dict, next) {
-				// fmt.Printf("Adding '%s' to %v\n", next, dict)
-				chain[trimmed] = append(dict, next)
-			}
+			chain[trimmed] = append(dict, next)
 		}
 	}
 
