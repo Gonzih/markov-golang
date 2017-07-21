@@ -114,8 +114,8 @@ func main() {
 	var output string
 	var i int
 
-	for i < 100 {
-		output = output + GenerateOutput(chain)
+	for i < 10 {
+		output = output + GenerateOutput(chain) + " "
 		i++
 	}
 
