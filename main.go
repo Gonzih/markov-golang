@@ -54,7 +54,7 @@ func GenerateChain(input string) Chain {
 		}
 	}
 
-	// fmt.Printf("%v\n", chain)
+	// log.Printf("%v\n", chain)
 
 	return chain
 }
@@ -133,7 +133,7 @@ func generate(n int) string {
 		i++
 	}
 
-	fmt.Printf("%s\n", output)
+	log.Printf("%s\n", output)
 
 	return output
 }
