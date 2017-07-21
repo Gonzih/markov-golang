@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 type Chain map[string][]string
@@ -50,10 +52,8 @@ func GenerateChain(input string) Chain {
 	return chain
 }
 
-func GenerateSentence(chain *Chain) string {
+func GenerateSentence(current string, chain *Chain) string {
 	var output string
-
-	current := "It"
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -81,14 +81,43 @@ func GenerateSentence(chain *Chain) string {
 	return output
 }
 
+func RandomKey(chain *Chain) string {
+	for {
+		var i int
+		n := rand.Intn(len(*chain))
+
+		for m := range *chain {
+			b := []byte(m[0:1])
+			r, _ := utf8.DecodeRune(b)
+			isUpper := unicode.IsUpper(r)
+			if i == n && isUpper {
+				return m
+			}
+			i++
+		}
+	}
+
+	return "test"
+}
+
 func GenerateOutput(chain Chain) string {
-	return GenerateSentence(&chain)
+	start := RandomKey(&chain)
+	return GenerateSentence(start, &chain)
 }
 
 func main() {
+
+	rand.Seed(time.Now().Unix())
 	input := ReadInput()
 	chain := GenerateChain(input)
-	output := GenerateOutput(chain)
+
+	var output string
+	var i int
+
+	for i < 100 {
+		output = output + GenerateOutput(chain)
+		i++
+	}
 
 	fmt.Printf("%s\n", output)
 }
