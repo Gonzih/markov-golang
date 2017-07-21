@@ -145,7 +145,15 @@ func main() {
 	input := ReadInput()
 	sharedChain = GenerateChain(input)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
+	address := fmt.Sprint(":%s", port)
+
+	log.Fatal(http.ListenAndServe(address, router))
 }
 
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
