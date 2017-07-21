@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"math/rand"
@@ -156,6 +157,21 @@ func main() {
 	log.Fatal(http.ListenAndServe(address, router))
 }
 
+type TemplatePayload struct {
+	Output string
+}
+
+func RenderTemplate(payload TemplatePayload, w http.ResponseWriter) error {
+	tpl, err := template.ParseFiles("templates/index.html")
+
+	if err != nil {
+		log.Fatalf("Error parsing template: %s", err.Error())
+		return err
+	}
+
+	return tpl.ExecuteTemplate(w, "index.html", payload)
+}
+
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var sentences int
 
@@ -174,5 +190,13 @@ func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	output := generate(sentences)
-	fmt.Fprint(w, fmt.Sprintf("%s\n", output))
+
+	err = RenderTemplate(TemplatePayload{Output: output}, w)
+
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	// fmt.Fprint(w, fmt.Sprintf("%s\n", output))
 }

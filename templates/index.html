@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v2.3.3/dist/mini-default.min.css">
+        <script src="https://use.fontawesome.com/9882f5e14f.js"></script>
+
+
+        <style>
+            .center {
+                text-align: center;
+            }
+
+            .float-right {
+                float: right;
+            }
+
+            header {
+                margin-bottom: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <a href="https://ted-talk-aas.herokuapp.com/" class="logo"> TED talk as a service </a>
+            <a href="https://github.com/Gonzih/markov-golang" class="float-right fa fa-github button" target="_blank">&nbsp;GitHub</a>
+        </header>
+
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <blockquote cite="TED talk as a service">
+                    {{ .Output }}
+                </blockquote>
+            </div>
+            <div class="col-sm-12 center">
+                <input type="button" class="primary" value="More!" onclick="document.location.reload();">
+            </div>
+        </div>
+    </body>
+</html>
