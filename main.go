@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -53,6 +54,8 @@ func GenerateChain(input string) Chain {
 }
 
 func GenerateSentence(current string, chain *Chain) string {
+	endRegexp := regexp.MustCompile("^.*[.!?]$")
+
 	var output string
 
 	rand.Seed(time.Now().UnixNano())
@@ -70,7 +73,7 @@ func GenerateSentence(current string, chain *Chain) string {
 		output = output + " " + current
 		current = next
 
-		if strings.HasSuffix(next, ".") {
+		if endRegexp.MatchString(next) {
 			output = output + " " + next
 			break
 		}
