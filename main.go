@@ -5,13 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type Chain map[string][]string
@@ -104,31 +109,60 @@ func RandomKey(chain *Chain) string {
 	return "test"
 }
 
-func GenerateOutput(chain Chain) string {
-	start := RandomKey(&chain)
-	return GenerateSentence(start, &chain)
+func GenerateOutput(chain *Chain) string {
+	start := RandomKey(chain)
+	return GenerateSentence(start, chain)
 }
 
-var numberOfSentences int
+var maxNumberOfSentences int
+
+var sharedChain Chain
 
 func init() {
-	flag.IntVar(&numberOfSentences, "sentences", 10, "number of sentences to generate")
+	flag.IntVar(&maxNumberOfSentences, "sentences", 10, "number of sentences to generate")
 	flag.Parse()
+	rand.Seed(time.Now().Unix())
 }
 
-func main() {
-
-	rand.Seed(time.Now().Unix())
-	input := ReadInput()
-	chain := GenerateChain(input)
-
+func generate(n int) string {
 	var output string
 	var i int
 
-	for i < numberOfSentences {
-		output = output + GenerateOutput(chain) + " "
+	for i < n {
+		output = output + GenerateOutput(&sharedChain) + " "
 		i++
 	}
 
 	fmt.Printf("%s\n", output)
+
+	return output
+}
+
+func main() {
+	router := httprouter.New()
+	router.GET("/", TalkHandler)
+
+	input := ReadInput()
+	sharedChain = GenerateChain(input)
+
+	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ns := r.FormValue("sentences")
+	n, err := strconv.ParseInt(ns, 10, 64)
+
+	sentences := int(n)
+
+	if sentences > maxNumberOfSentences {
+		fmt.Fprint(w, "Too many sentences\n")
+	}
+
+	if err != nil {
+		fmt.Fprint(w, fmt.Sprintf("\n", err.Error()))
+		return
+	}
+
+	output := generate(sentences)
+	fmt.Fprint(w, fmt.Sprintf("%s\n", output))
 }
