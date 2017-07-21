@@ -149,18 +149,19 @@ func main() {
 }
 
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var sentences int
+
 	ns := r.FormValue("sentences")
 	n, err := strconv.ParseInt(ns, 10, 64)
 
-	sentences := int(n)
+	if err != nil {
+		sentences = 10
+	} else {
+		sentences = int(n)
+	}
 
 	if sentences > maxNumberOfSentences {
 		fmt.Fprint(w, "Too many sentences\n")
-	}
-
-	if err != nil {
-		fmt.Fprint(w, fmt.Sprintf("\n", err.Error()))
-		return
 	}
 
 	output := generate(sentences)
