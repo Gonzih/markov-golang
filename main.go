@@ -162,6 +162,7 @@ func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	if sentences > maxNumberOfSentences {
 		fmt.Fprint(w, "Too many sentences\n")
+		return
 	}
 
 	output := generate(sentences)
