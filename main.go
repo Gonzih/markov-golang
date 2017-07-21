@@ -118,7 +118,7 @@ func GenerateOutput(chain *Chain) string {
 }
 
 func init() {
-	flag.IntVar(&maxNumberOfSentences, "sentences", 10, "number of sentences to generate")
+	flag.IntVar(&maxNumberOfSentences, "sentences", 100, "number of sentences to generate")
 	flag.Parse()
 	rand.Seed(time.Now().Unix())
 	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
