@@ -22,6 +22,10 @@ import (
 
 type Chain map[string][]string
 
+var maxNumberOfSentences int
+var sharedChain Chain
+var sentenceEndRegexp *regexp.Regexp
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
@@ -61,8 +65,6 @@ func GenerateChain(input string) Chain {
 }
 
 func GenerateSentence(current string, chain *Chain) string {
-	endRegexp := regexp.MustCompile("^.*[.!?]$")
-
 	var output string
 
 	rand.Seed(time.Now().UnixNano())
@@ -80,7 +82,7 @@ func GenerateSentence(current string, chain *Chain) string {
 		output = output + " " + current
 		current = next
 
-		if endRegexp.MatchString(next) {
+		if sentenceEndRegexp.MatchString(next) {
 			output = output + " " + next
 			break
 		}
@@ -115,14 +117,13 @@ func GenerateOutput(chain *Chain) string {
 	return GenerateSentence(start, chain)
 }
 
-var maxNumberOfSentences int
-
-var sharedChain Chain
-
 func init() {
 	flag.IntVar(&maxNumberOfSentences, "sentences", 10, "number of sentences to generate")
 	flag.Parse()
 	rand.Seed(time.Now().Unix())
+	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
+	input := ReadInput()
+	sharedChain = GenerateChain(input)
 }
 
 func generate(n int) string {
@@ -142,9 +143,6 @@ func generate(n int) string {
 func main() {
 	router := httprouter.New()
 	router.GET("/", TalkHandler)
-
-	input := ReadInput()
-	sharedChain = GenerateChain(input)
 
 	port := os.Getenv("PORT")
 
