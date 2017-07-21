@@ -151,7 +151,7 @@ func main() {
 		port = "8080"
 	}
 
-	address := fmt.Sprint(":%s", port)
+	address := fmt.Sprintf(":%s", port)
 
 	log.Fatal(http.ListenAndServe(address, router))
 }
