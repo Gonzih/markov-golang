@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"math/rand"
@@ -108,6 +109,13 @@ func GenerateOutput(chain Chain) string {
 	return GenerateSentence(start, &chain)
 }
 
+var numberOfSentences int
+
+func init() {
+	flag.IntVar(&numberOfSentences, "sentences", 10, "number of sentences to generate")
+	flag.Parse()
+}
+
 func main() {
 
 	rand.Seed(time.Now().Unix())
@@ -117,7 +125,7 @@ func main() {
 	var output string
 	var i int
 
-	for i < 10 {
+	for i < numberOfSentences {
 		output = output + GenerateOutput(chain) + " "
 		i++
 	}
