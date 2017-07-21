@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"encoding/csv"
-	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -22,27 +19,14 @@ func checkErr(err error) {
 }
 
 func ReadInput() string {
-	file, err := os.Open("input.csv")
+	file, err := os.Open("input.txt")
 	checkErr(err)
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
+	buf := bytes.NewBuffer(nil)
+	io.Copy(buf, file)
 
-	var input string
-
-	csvReader := csv.NewReader(reader)
-
-	records, err := csvReader.ReadAll()
-
-	checkErr(err)
-
-	for _, record := range records {
-		if len(record) > 0 {
-			input = input + record[0] + ". "
-		}
-	}
-
-	return input
+	return string(buf.Bytes())
 }
 
 func GenerateChain(input string) Chain {
@@ -66,15 +50,15 @@ func GenerateChain(input string) Chain {
 	return chain
 }
 
-func GenerateOutput(chain Chain) string {
+func GenerateSentence(chain *Chain) string {
 	var output string
 
-	current := "This"
+	current := "It"
 
 	rand.Seed(time.Now().UnixNano())
 
 	for {
-		nextArr := chain[current]
+		nextArr := (*chain)[current]
 		l := len(nextArr)
 
 		if l == 0 {
@@ -97,32 +81,8 @@ func GenerateOutput(chain Chain) string {
 	return output
 }
 
-type Message struct {
-	Text     string `json:"text"`
-	Username string `json:"username"`
-	Icon     string `json:"icon_emoji"`
-}
-
-func PostToSlack(output string) {
-	message := Message{Text: output, Username: "Markov", Icon: ":shipit:"}
-	json, err := json.Marshal(&message)
-
-	checkErr(err)
-
-	url := "https://hooks.slack.com/services/000000000/000000000/000000000000000000000000"
-
-	client := http.Client{}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
-
-	checkErr(err)
-
-	req.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(req)
-
-	checkErr(err)
-
-	req.Body.Close()
+func GenerateOutput(chain Chain) string {
+	return GenerateSentence(&chain)
 }
 
 func main() {
@@ -131,6 +91,4 @@ func main() {
 	output := GenerateOutput(chain)
 
 	fmt.Printf("%s\n", output)
-
-	PostToSlack(output)
 }
