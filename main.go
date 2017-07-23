@@ -98,7 +98,7 @@ func GenerateSentence(current string, chain *Chain) string {
 	return output
 }
 
-func RandomKey(chain *Chain) string {
+func RandomBeginningOfASentence(chain *Chain) string {
 	for {
 		var i int
 		n := rand.Intn(len(*chain))
@@ -118,7 +118,7 @@ func RandomKey(chain *Chain) string {
 }
 
 func GenerateQuote(chain *Chain) string {
-	start := RandomKey(chain)
+	start := RandomBeginningOfASentence(chain)
 	return GenerateSentence(start, chain)
 }
 
@@ -184,7 +184,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	router := httprouter.New()
-	router.GET("/", TalkHandler)
+	router.GET("/", IndexHandler)
 	router.GET("/talk/:id", ShowHandler)
 
 	if port == "" {
@@ -242,7 +242,7 @@ func ShowHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var sentences int
 
 	ns := r.FormValue("sentences")
