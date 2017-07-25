@@ -140,11 +140,27 @@ func generate(n int) string {
 	return output
 }
 
-func main() {
-	router := httprouter.New()
-	router.GET("/", TalkHandler)
+func ForceHTTPS(h httprouter.Handle, forceHTTPS bool) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		if r.TLS == nil && forceHTTPS {
+			newURL := fmt.Sprintf("https://%s%s", r.Host, r.URL.String())
+			http.Redirect(w, r, newURL, http.StatusMovedPermanently)
+		} else {
+			h(w, r, ps)
+		}
+	}
+}
 
+func main() {
 	port := os.Getenv("PORT")
+	forceHTTPS := false
+
+	if os.Getenv("ENVIRONMENT") == "production" {
+		forceHTTPS = true
+	}
+
+	router := httprouter.New()
+	router.GET("/", ForceHTTPS(TalkHandler, forceHTTPS))
 
 	if port == "" {
 		port = "8080"
