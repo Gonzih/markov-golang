@@ -159,15 +159,13 @@ type TemplatePayload struct {
 	Output string
 }
 
+var templates = template.Must(template.ParseGlob("templates/*"))
+
 func RenderTemplate(payload TemplatePayload, w http.ResponseWriter) error {
-	tpl, err := template.ParseFiles("templates/index.html")
+	// development
+	// templates = template.Must(template.ParseGlob("templates/*"))
 
-	if err != nil {
-		log.Fatalf("Error parsing template: %s", err.Error())
-		return err
-	}
-
-	return tpl.ExecuteTemplate(w, "index.html", payload)
+	return templates.ExecuteTemplate(w, "index.html", payload)
 }
 
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
