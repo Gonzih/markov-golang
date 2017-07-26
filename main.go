@@ -27,9 +27,9 @@ type Chain map[string][]string
 
 var maxNumberOfSentences int
 var sharedChain Chain
-var sentenceEndRegexp *regexp.Regexp
 var redisClient *redis.Client
 var templates *template.Template
+var sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
 
 func checkErr(err error) {
 	if err != nil {
@@ -69,8 +69,9 @@ func GenerateChain(input string) Chain {
 	return chain
 }
 
-func GenerateSentence(current string, chain *Chain) string {
+func GenerateSentence(current string, chain *Chain, limit int) string {
 	var output string
+	var count int
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -88,8 +89,12 @@ func GenerateSentence(current string, chain *Chain) string {
 		current = next
 
 		if sentenceEndRegexp.MatchString(next) {
-			output = output + " " + next
-			break
+			count++
+
+			if count >= limit {
+				output = output + " " + next
+				break
+			}
 		}
 	}
 
@@ -117,20 +122,13 @@ func RandomBeginningOfASentence(chain *Chain) string {
 	return "test"
 }
 
-func GenerateQuote(chain *Chain) string {
+func GenerateQuote(chain *Chain, limit int) string {
 	start := RandomBeginningOfASentence(chain)
-	return GenerateSentence(start, chain)
+	return GenerateSentence(start, chain, limit)
 }
 
 func generate(n int) string {
-	var output string
-	var i int
-
-	for i < n {
-		output = output + GenerateQuote(&sharedChain) + " "
-		i++
-	}
-
+	output := GenerateQuote(&sharedChain, n)
 	log.Printf("%s\n", output)
 
 	return output
@@ -176,7 +174,6 @@ func init() {
 	initViper()
 
 	rand.Seed(time.Now().Unix())
-	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
 	templates = template.Must(template.ParseGlob("templates/*"))
 	maxNumberOfSentences = viper.GetInt("sentences")
 	input := ReadInput()
