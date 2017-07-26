@@ -28,6 +28,8 @@ type Chain map[string][]string
 var maxNumberOfSentences int
 var sharedChain Chain
 var sentenceEndRegexp *regexp.Regexp
+var redisClient *redis.Client
+var templates *template.Template
 
 func checkErr(err error) {
 	if err != nil {
@@ -166,8 +168,6 @@ func initViper() {
 	}
 }
 
-var redisClient *redis.Client
-
 func init() {
 	flag.IntVar(&maxNumberOfSentences, "sentences", 100, "number of sentences to generate")
 	flag.Parse()
@@ -177,6 +177,7 @@ func init() {
 	sharedChain = GenerateChain(input)
 	initViper()
 	redisClient = newRedisClient()
+	templates = template.Must(template.ParseGlob("templates/*"))
 }
 
 func main() {
@@ -199,8 +200,6 @@ type templatePayload struct {
 	Quote string
 	ID    string
 }
-
-var templates = template.Must(template.ParseGlob("templates/*"))
 
 func renderTemplate(payload templatePayload, w http.ResponseWriter) error {
 	if viper.GetString("environment") != "production" {
