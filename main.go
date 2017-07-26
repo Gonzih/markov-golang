@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"html/template"
 	"io"
@@ -20,6 +19,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -155,11 +155,15 @@ func newRedisClient() *redis.Client {
 }
 
 func initViper() {
+	pflag.Int("sentences", 100, "number of sentences to generate")
+	pflag.Parse()
+
 	viper.AddConfigPath("./config")
 	viper.SetConfigName("development")
 	viper.SetConfigType("yaml")
 	viper.BindEnv("redis_url")
 	viper.BindEnv("environment")
+	viper.BindPFlags(pflag.CommandLine)
 
 	err := viper.ReadInConfig()
 
@@ -169,15 +173,15 @@ func initViper() {
 }
 
 func init() {
-	flag.IntVar(&maxNumberOfSentences, "sentences", 100, "number of sentences to generate")
-	flag.Parse()
+	initViper()
+
 	rand.Seed(time.Now().Unix())
 	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
+	templates = template.Must(template.ParseGlob("templates/*"))
+	maxNumberOfSentences = viper.GetInt("sentences")
 	input := ReadInput()
 	sharedChain = GenerateChain(input)
-	initViper()
 	redisClient = newRedisClient()
-	templates = template.Must(template.ParseGlob("templates/*"))
 }
 
 func main() {
