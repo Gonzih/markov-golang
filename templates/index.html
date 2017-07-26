@@ -31,6 +31,20 @@
                 }
             }
         </style>
+
+        <script>
+            var usingVoice = false;
+
+            function voiceIt(text) {
+                if (usingVoice) {
+                    responsiveVoice.cancel()
+                } else {
+                    responsiveVoice.speak(text)
+                }
+
+                usingVoice = !usingVoice;
+            }
+        </script>
     </head>
     <body>
         <main class="wrapper">
@@ -51,7 +65,7 @@
 
                 <div class="row">
                     <div class="column centered">
-                        <input type="button" class="button" value="Voice it!" onclick="responsiveVoice.speak('{{ .Quote }}');">
+                        <input type="button" class="button" value="Voice it!" onclick="voiceIt('{{ .Quote }}');">
 
                         <a href="/">
                             <input type="button" class="button" value="More!">
