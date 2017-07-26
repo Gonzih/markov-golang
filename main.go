@@ -29,7 +29,7 @@ var maxNumberOfSentences int
 var sharedChain Chain
 var redisClient *redis.Client
 var templates *template.Template
-var sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
+var sentenceEndRegexp = regexp.MustCompile("[.!?]$")
 
 func checkErr(err error) {
 	if err != nil {
