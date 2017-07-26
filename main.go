@@ -17,7 +17,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/go-redis/redis"
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
+	"github.com/spf13/viper"
 )
 
 type Chain map[string][]string
@@ -117,15 +120,6 @@ func GenerateOutput(chain *Chain) string {
 	return GenerateSentence(start, chain)
 }
 
-func init() {
-	flag.IntVar(&maxNumberOfSentences, "sentences", 100, "number of sentences to generate")
-	flag.Parse()
-	rand.Seed(time.Now().Unix())
-	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
-	input := ReadInput()
-	sharedChain = GenerateChain(input)
-}
-
 func generate(n int) string {
 	var output string
 	var i int
@@ -138,6 +132,50 @@ func generate(n int) string {
 	log.Printf("%s\n", output)
 
 	return output
+}
+
+func newRedisClient() *redis.Client {
+	opts, err := redis.ParseURL(viper.GetString("redis_url"))
+
+	if err != nil {
+		log.Fatalf("Error initializing redis client: %s", err.Error())
+	}
+
+	client := redis.NewClient(opts)
+
+	_, err = client.Ping().Result()
+
+	if err != nil {
+		log.Fatalf("Error executing pong on redis, %s", err.Error())
+	}
+
+	return client
+}
+
+func initViper() {
+	viper.AddConfigPath("./config")
+	viper.SetConfigName("development")
+	viper.SetConfigType("yaml")
+	viper.BindEnv("redis_url")
+
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		log.Fatalf("Error reading viper conf: %s", err.Error())
+	}
+}
+
+var redisClient *redis.Client
+
+func init() {
+	flag.IntVar(&maxNumberOfSentences, "sentences", 100, "number of sentences to generate")
+	flag.Parse()
+	rand.Seed(time.Now().Unix())
+	sentenceEndRegexp = regexp.MustCompile("^.*[.!?]$")
+	input := ReadInput()
+	sharedChain = GenerateChain(input)
+	initViper()
+	redisClient = newRedisClient()
 }
 
 func main() {
@@ -155,17 +193,26 @@ func main() {
 	log.Fatal(http.ListenAndServe(address, router))
 }
 
-type TemplatePayload struct {
+type templatePayload struct {
 	Output string
+	ID     string
 }
 
 var templates = template.Must(template.ParseGlob("templates/*"))
 
-func RenderTemplate(payload TemplatePayload, w http.ResponseWriter) error {
+func renderTemplate(payload templatePayload, w http.ResponseWriter) error {
 	// development
-	// templates = template.Must(template.ParseGlob("templates/*"))
+	templates = template.Must(template.ParseGlob("templates/*"))
 
 	return templates.ExecuteTemplate(w, "index.html", payload)
+}
+
+func saveQuote(key, quote string) error {
+	return redisClient.Set(key, quote, 0).Err()
+}
+
+func loadQuote(key string) (string, error) {
+	return redisClient.Get(key).Result()
 }
 
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -186,8 +233,15 @@ func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	output := generate(sentences)
+	id := uuid.New().String()
 
-	err = RenderTemplate(TemplatePayload{Output: output}, w)
+	err = saveQuote(id, output)
+
+	if err != nil {
+		log.Printf("Error saving quote to redis: %s", err.Error())
+	}
+
+	err = renderTemplate(templatePayload{Output: output, ID: id}, w)
 
 	if err != nil {
 		fmt.Fprint(w, err.Error())
