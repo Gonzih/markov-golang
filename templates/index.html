@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
         <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
 
-        <script src="https://use.fontawesome.com/9882f5e14f.js" async></script>
+        <script src='https://code.responsivevoice.org/responsivevoice.js' async></script>
 
         <style>
             .centered {
@@ -54,9 +54,16 @@
                         <a href="/">
                             <input type="button" class="button" value="More!">
                         </a>
+                    </div>
+
+                    <div class="column centered">
                         <a href="/talk/{{ .ID }}">
                             <input type="button" class="button" value="Permalink">
                         </a>
+                    </div>
+
+                    <div class="column centered">
+                        <input type="button" class="button" value="Voice it!" onclick="responsiveVoice.speak('{{ .Quote }}');">
                     </div>
                 </div>
             </section>

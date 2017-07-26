@@ -157,6 +157,7 @@ func initViper() {
 	viper.SetConfigName("development")
 	viper.SetConfigType("yaml")
 	viper.BindEnv("redis_url")
+	viper.BindEnv("environment")
 
 	err := viper.ReadInConfig()
 
@@ -202,8 +203,9 @@ type templatePayload struct {
 var templates = template.Must(template.ParseGlob("templates/*"))
 
 func renderTemplate(payload templatePayload, w http.ResponseWriter) error {
-	// development
-	templates = template.Must(template.ParseGlob("templates/*"))
+	if viper.GetString("environment") != "production" {
+		templates = template.Must(template.ParseGlob("templates/*"))
+	}
 
 	return templates.ExecuteTemplate(w, "index.html", payload)
 }
