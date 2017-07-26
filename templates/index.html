@@ -51,6 +51,10 @@
 
                 <div class="row">
                     <div class="column centered">
+                        <input type="button" class="button" value="Voice it!" onclick="responsiveVoice.speak('{{ .Quote }}');">
+                    </div>
+
+                    <div class="column centered">
                         <a href="/">
                             <input type="button" class="button" value="More!">
                         </a>
@@ -60,10 +64,6 @@
                         <a href="/talk/{{ .ID }}">
                             <input type="button" class="button" value="Permalink">
                         </a>
-                    </div>
-
-                    <div class="column centered">
-                        <input type="button" class="button" value="Voice it!" onclick="responsiveVoice.speak('{{ .Quote }}');">
                     </div>
                 </div>
             </section>
