@@ -235,14 +235,12 @@ func ShowHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var sentences int
+	sentences := 10
 
 	ns := r.FormValue("sentences")
 	n, err := strconv.ParseInt(ns, 10, 64)
 
-	if err != nil {
-		sentences = 10
-	} else {
+	if err == nil {
 		sentences = int(n)
 	}
 
