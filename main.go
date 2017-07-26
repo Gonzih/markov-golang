@@ -115,7 +115,7 @@ func RandomKey(chain *Chain) string {
 	return "test"
 }
 
-func GenerateOutput(chain *Chain) string {
+func GenerateQuote(chain *Chain) string {
 	start := RandomKey(chain)
 	return GenerateSentence(start, chain)
 }
@@ -125,7 +125,7 @@ func generate(n int) string {
 	var i int
 
 	for i < n {
-		output = output + GenerateOutput(&sharedChain) + " "
+		output = output + GenerateQuote(&sharedChain) + " "
 		i++
 	}
 
@@ -183,6 +183,7 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/", TalkHandler)
+	router.GET("/talk/:id", ShowHandler)
 
 	if port == "" {
 		port = "8080"
@@ -194,8 +195,8 @@ func main() {
 }
 
 type templatePayload struct {
-	Output string
-	ID     string
+	Quote string
+	ID    string
 }
 
 var templates = template.Must(template.ParseGlob("templates/*"))
@@ -213,6 +214,31 @@ func saveQuote(key, quote string) error {
 
 func loadQuote(key string) (string, error) {
 	return redisClient.Get(key).Result()
+}
+
+func ShowHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := ps.ByName("id")
+
+	quote, err := loadQuote(id)
+
+	if err != nil {
+		log.Printf("Error loading quote to redis: %s", err.Error())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if len(quote) == 0 {
+		log.Printf("Quote not found")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err = renderTemplate(templatePayload{Quote: quote, ID: id}, w)
+
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
 }
 
 func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -241,7 +267,7 @@ func TalkHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		log.Printf("Error saving quote to redis: %s", err.Error())
 	}
 
-	err = renderTemplate(templatePayload{Output: output, ID: id}, w)
+	err = renderTemplate(templatePayload{Quote: output, ID: id}, w)
 
 	if err != nil {
 		fmt.Fprint(w, err.Error())
