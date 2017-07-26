@@ -24,7 +24,7 @@ func TestGenerateChain(t *testing.T) {
 func TestGenerateOutput(t *testing.T) {
 	input := "This is super great thing."
 	chain := GenerateChain(input)
-	output := GenerateQuote(&chain)
+	output := GenerateQuote(&chain, 1)
 
 	if input != output {
 		t.Errorf("%s != %s", input, output)

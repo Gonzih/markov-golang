@@ -64,8 +64,6 @@ func GenerateChain(input string) Chain {
 		}
 	}
 
-	// log.Printf("%v\n", chain)
-
 	return chain
 }
 
@@ -125,13 +123,6 @@ func RandomBeginningOfASentence(chain *Chain) string {
 func GenerateQuote(chain *Chain, limit int) string {
 	start := RandomBeginningOfASentence(chain)
 	return GenerateSentence(start, chain, limit)
-}
-
-func generate(n int) string {
-	output := GenerateQuote(&sharedChain, n)
-	log.Printf("%s\n", output)
-
-	return output
 }
 
 func newRedisClient() *redis.Client {
@@ -260,8 +251,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	output := generate(sentences)
+	output := GenerateQuote(&sharedChain, sentences)
 	id := uuid.New().String()
+
+	log.Printf("%s\n", output)
 
 	err = saveQuote(id, output)
 
