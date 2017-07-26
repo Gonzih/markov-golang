@@ -214,14 +214,14 @@ func ShowHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	quote, err := loadQuote(id)
 
-	if err != nil {
-		log.Printf("Error loading quote to redis: %s", err.Error())
+	if err == redis.Nil || len(quote) == 0 {
+		log.Printf("Quote not found")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	if len(quote) == 0 {
-		log.Printf("Quote not found")
+	if err != nil {
+		log.Printf("Error loading quote to redis: %s", err.Error())
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
